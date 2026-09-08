@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Customer Churn Prediction & Retention Intelligence{% endblock %}
+{% block header_title %}System Overview{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Hero Section -->
+  <div class="saas-card bg-primary text-white border-0 mb-4 p-4 p-lg-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-semibold">
+          <i class="bi bi-patch-check-fill me-1"></i> University ML Capstone & Enterprise Intelligence
+        </span>
+        <h1 class="display-6 fw-bold mb-3">Customer Churn Prediction & Retention Intelligence System</h1>
+        <p class="lead mb-4 text-light opacity-90" style="max-width: 680px;">
+          Empowering subscriber businesses to detect early attrition risk, uncover key churn drivers, run what-if contract simulations, and trigger prioritized customer retention campaigns.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary">
+            <i class="bi bi-speedometer2 me-1"></i> Open Dashboard
+          </a>
+          <a href="{{ url_for('main.predict') }}" class="btn btn-outline-light btn-lg px-4 fw-semibold">
+            <i class="bi bi-person-check me-1"></i> Predict Single Customer
+          </a>
+          <a href="{{ url_for('main.simulator') }}" class="btn btn-outline-light btn-lg px-4 fw-semibold">
+            <i class="bi bi-sliders me-1"></i> What-If Simulator
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center d-none d-lg-block">
+        <div class="p-4 rounded-4 bg-white text-dark shadow-lg text-start" style="backdrop-filter: blur(10px);">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <span class="fw-bold text-muted small text-uppercase">Production Model</span>
+            <span class="badge bg-success">Active</span>
+          </div>
+          <h4 class="fw-bold text-primary mb-1">{{ model_name }}</h4>
+          <p class="text-muted small mb-3">Trained on IBM Telco Churn Dataset (7,043 instances)</p>
+          
+          <div class="row g-2 text-center">
+            <div class="col-6">
+              <div class="p-2 border rounded bg-light">
+                <div class="fw-bold fs-5 text-dark">{{ accuracy }}%</div>
+                <div class="text-muted small">Accuracy</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 border rounded bg-light">
+                <div class="fw-bold fs-5 text-dark">{{ roc_auc }}</div>
+                <div class="text-muted small">ROC-AUC</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Capabilities Grid -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="saas-card h-100">
+        <div class="d-inline-flex p-3 rounded-3 bg-primary-subtle text-primary mb-3">
+          <i class="bi bi-cpu fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Real ML Pipeline</h5>
+        <p class="text-muted small mb-0">
+          Built with Scikit-Learn ColumnTransformer, StandardScaler, and OneHotEncoder without data leakage. Real trained weights and probability calibration.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="saas-card h-100">
+        <div class="d-inline-flex p-3 rounded-3 bg-danger-subtle text-danger mb-3">
+          <i class="bi bi-speedometer fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Multi-Tier Risk Gauge</h5>
+        <p class="text-muted small mb-0">
+          Dynamically categorizes accounts into Low (&lt;30%), Medium (30-70%), and High (&ge;70%) risk with calibrated risk scores from 0 to 100.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="saas-card h-100">
+        <div class="d-inline-flex p-3 rounded-3 bg-warning-subtle text-warning mb-3">
+          <i class="bi bi-sliders fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">What-If Simulator</h5>
+        <p class="text-muted small mb-0">
+          Interactively test changes to contract length, tech support, and pricing to see immediate before-and-after churn probability shifts.
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="saas-card h-100">
+        <div class="d-inline-flex p-3 rounded-3 bg-success-subtle text-success mb-3">
+          <i class="bi bi-bullseye fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Retention Campaigns</h5>
+        <p class="text-muted small mb-0">
+          Generate targeted subscriber outreach lists prioritized by highest churn probability, complete with actionable business playbooks.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Navigation Links -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-grid-3x3-gap text-primary"></i> Application Modules</h5>
+      <span class="text-muted small">Select any module to begin</span>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <a href="{{ url_for('main.dashboard') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-bar-chart-line fs-2 text-primary"></i>
+            <div>
+              <div class="fw-bold text-main">Analytics Dashboard</div>
+              <div class="text-muted small">KPIs, churn rates, and segment charts</div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.predict') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-person-lines-fill fs-2 text-success"></i>
+            <div>
+              <div class="fw-bold text-main">Single Prediction</div>
+              <div class="text-muted small">Input demographics, services, and billing</div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.batch') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-file-earmark-arrow-up fs-2 text-info"></i>
+            <div>
+              <div class="fw-bold text-main">Batch CSV Prediction</div>
+              <div class="text-muted small">Upload CSV and download predictions</div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.simulator') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-sliders2-vertical fs-2 text-warning"></i>
+            <div>
+              <div class="fw-bold text-main">What-If Simulator</div>
+              <div class="text-muted small">Simulate policy and bundle changes</div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.retention') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-megaphone fs-2 text-danger"></i>
+            <div>
+              <div class="fw-bold text-main">Retention Campaign</div>
+              <div class="text-muted small">Prioritize and export high-risk accounts</div>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="{{ url_for('main.model_info') }}" class="text-decoration-none">
+          <div class="p-3 border rounded-3 h-100 d-flex align-items-center gap-3 bg-body hover-shadow">
+            <i class="bi bi-award fs-2 text-purple"></i>
+            <div>
+              <div class="fw-bold text-main">Model Performance</div>
+              <div class="text-muted small">ROC Curves, Confusion Matrix & Metrics</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

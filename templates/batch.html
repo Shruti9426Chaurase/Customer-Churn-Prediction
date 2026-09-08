@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Batch CSV Prediction - ChurnShield AI{% endblock %}
+{% block header_title %}Batch Scoring & CSV Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Upload Section -->
+  <div class="saas-card mb-4">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-file-earmark-arrow-up text-primary"></i> Upload Subscriber CSV Dataset</h5>
+      <a href="{{ url_for('main.download_file', filename='sample_customers.csv') }}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-download me-1"></i> Download Sample CSV Template
+      </a>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.batch') }}" enctype="multipart/form-data" id="batchForm">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <label class="form-label fw-bold">Select CSV File</label>
+          <input type="file" name="file" id="batchFileInput" class="form-control form-control-lg" accept=".csv" required>
+          <div class="form-text mt-1 text-muted small">
+            Supported format: Standard Telco CSV with columns: <code>customerID, gender, SeniorCitizen, Partner, Dependents, tenure, PhoneService, MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, PaperlessBilling, PaymentMethod, MonthlyCharges, TotalCharges</code>
+          </div>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-lg-4">
+          <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold w-100" id="batchSubmitBtn">
+            <i class="bi bi-gear-wide-connected me-1"></i> Run Batch Predictions
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {% if summary %}
+  <!-- Batch Execution Summary KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Processed</div>
+        <div class="kpi-value text-primary">{{ summary.total_customers }}</div>
+        <div class="kpi-subtext">Rows Scored</div>
+        <i class="bi bi-people kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Predicted Churn</div>
+        <div class="kpi-value text-danger">{{ summary.churn_count }}</div>
+        <div class="kpi-subtext">{{ summary.churn_rate }}% Churn Rate</div>
+        <i class="bi bi-person-dash kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">High Risk</div>
+        <div class="kpi-value text-danger">{{ summary.high_risk_count }}</div>
+        <div class="kpi-subtext">Prob &ge; 70%</div>
+        <i class="bi bi-exclamation-triangle kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Medium Risk</div>
+        <div class="kpi-value text-warning">{{ summary.medium_risk_count }}</div>
+        <div class="kpi-subtext">Prob 30% - 69%</div>
+        <i class="bi bi-shield-exclamation kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Low Risk</div>
+        <div class="kpi-value text-success">{{ summary.low_risk_count }}</div>
+        <div class="kpi-subtext">Prob &lt; 30%</div>
+        <i class="bi bi-shield-check kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Probability</div>
+        <div class="kpi-value text-purple">{{ summary.avg_churn_probability }}%</div>
+        <div class="kpi-subtext">Cohort Mean</div>
+        <i class="bi bi-speedometer2 kpi-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download & Action Bar -->
+  <div class="saas-card mb-4 bg-light border">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h6 class="fw-bold mb-1"><i class="bi bi-check2-circle text-success me-1"></i> Vectorized Scoring Complete</h6>
+        <div class="text-muted small">Generated predictions and calibrated risk scores for all rows.</div>
+      </div>
+      <div>
+        {% if download_file %}
+        <a href="{{ url_for('main.download_file', filename=download_file) }}" class="btn btn-success btn-lg px-4 fw-bold">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Scored Results (.CSV)
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Results Table -->
+  <div class="saas-card">
+    <div class="saas-card-header flex-wrap gap-2">
+      <h6 class="saas-card-title"><i class="bi bi-table text-primary"></i> Batch Predictions Preview (Top 100)</h6>
+      
+      <!-- Table Filters -->
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="batchTableSearch" class="form-control form-control-sm" placeholder="Search Customer ID..." style="width: 180px;">
+        <select id="batchRiskFilter" class="form-select form-select-sm" style="width: 140px;">
+          <option value="">All Risks</option>
+          <option value="High Risk">High Risk</option>
+          <option value="Medium Risk">Medium Risk</option>
+          <option value="Low Risk">Low Risk</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+      <table class="table table-custom" id="batchResultsTable">
+        <thead class="sticky-top">
+          <tr>
+            <th>Customer ID</th>
+            <th>Prediction</th>
+            <th>Churn Probability</th>
+            <th>Risk Category</th>
+            <th>Risk Score</th>
+            <th>Contract</th>
+            <th>Tenure</th>
+            <th>Monthly Charges</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr data-risk="{{ r.risk_category }}">
+            <td><strong>{{ r.customerID }}</strong></td>
+            <td>
+              {% if r.prediction == 'Churn' %}
+                <span class="badge bg-danger">Churn</span>
+              {% else %}
+                <span class="badge bg-success">Retain</span>
+              {% endif %}
+            </td>
+            <td>
+              <strong>{{ (r.churn_probability * 100) | round(1) }}%</strong>
+            </td>
+            <td>
+              {% if r.risk_category == 'High Risk' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">High Risk</span>
+              {% elif r.risk_category == 'Medium Risk' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Medium Risk</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Low Risk</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                  <div class="progress-bar {% if r.risk_score >= 70 %}bg-danger{% elif r.risk_score >= 30 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ r.risk_score }}%;"></div>
+                </div>
+                <span class="small">{{ r.risk_score }}/100</span>
+              </div>
+            </td>
+            <td>{{ r.Contract }}</td>
+            <td>{{ r.tenure }} mo</td>
+            <td>${{ "%.2f"|format(r.MonthlyCharges|float) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Batch form submission feedback
+  const batchForm = document.getElementById('batchForm');
+  const batchBtn = document.getElementById('batchSubmitBtn');
+  if (batchForm && batchBtn) {
+    batchForm.addEventListener('submit', () => {
+      batchBtn.disabled = true;
+      batchBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing Batch...';
+    });
+  }
+
+  // Client-side table search and filter
+  const searchInput = document.getElementById('batchTableSearch');
+  const filterSelect = document.getElementById('batchRiskFilter');
+  const table = document.getElementById('batchResultsTable');
+
+  function filterTable() {
+    if (!table) return;
+    const query = (searchInput.value || '').toLowerCase();
+    const risk = filterSelect.value;
+    const rows = table.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      const rowRisk = row.getAttribute('data-risk') || '';
+      const matchesSearch = text.includes(query);
+      const matchesRisk = !risk || rowRisk === risk;
+
+      if (matchesSearch && matchesRisk) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  if (searchInput) searchInput.addEventListener('input', filterTable);
+  if (filterSelect) filterSelect.addEventListener('change', filterTable);
+</script>
+{% endblock %}

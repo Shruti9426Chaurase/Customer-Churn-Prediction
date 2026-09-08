@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History - ChurnShield AI{% endblock %}
+{% block header_title %}Prediction History & Audit Log{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="saas-card mb-4">
+    <div class="saas-card-header flex-wrap gap-2">
+      <h6 class="saas-card-title"><i class="bi bi-clock-history text-primary"></i> SQLite Prediction Log</h6>
+      
+      <!-- Filter and Search controls -->
+      <form method="GET" action="{{ url_for('main.history') }}" class="d-flex flex-wrap gap-2">
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Search Customer ID..." value="{{ search_query }}" style="width: 200px;">
+        <select name="risk" class="form-select form-select-sm" style="width: 150px;" onchange="this.form.submit()">
+          <option value="" {% if not active_filter %}selected{% endif %}>All Risk Levels</option>
+          <option value="High Risk" {% if active_filter == 'High Risk' %}selected{% endif %}>High Risk</option>
+          <option value="Medium Risk" {% if active_filter == 'Medium Risk' %}selected{% endif %}>Medium Risk</option>
+          <option value="Low Risk" {% if active_filter == 'Low Risk' %}selected{% endif %}>Low Risk</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        {% if search_query or active_filter %}
+          <a href="{{ url_for('main.history') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Customer ID</th>
+            <th>Prediction</th>
+            <th>Probability</th>
+            <th>Risk Category</th>
+            <th>Risk Score</th>
+            <th>Contract</th>
+            <th>Tenure</th>
+            <th>Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in predictions %}
+          <tr>
+            <td class="text-muted small">{{ p.created_at.strftime('%Y-%m-%d %H:%M:%S') if p.created_at else 'Just now' }}</td>
+            <td><strong>{{ p.customer_id }}</strong></td>
+            <td>
+              {% if p.prediction == 'Churn' %}
+                <span class="badge bg-danger">Churn</span>
+              {% else %}
+                <span class="badge bg-success">Retain</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ (p.probability * 100) | round(1) }}%</strong></td>
+            <td>
+              {% if p.risk_category == 'High Risk' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">High Risk</span>
+              {% elif p.risk_category == 'Medium Risk' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Medium Risk</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Low Risk</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                  <div class="progress-bar {% if p.risk_score >= 70 %}bg-danger{% elif p.risk_score >= 30 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ p.risk_score }}%;"></div>
+                </div>
+                <span class="small">{{ p.risk_score }}/100</span>
+              </div>
+            </td>
+            <td>{{ p.contract or 'N/A' }}</td>
+            <td>{{ p.tenure | int if p.tenure is not none else 'N/A' }} mo</td>
+            <td><span class="badge bg-light text-muted border">{{ p.model_version }}</span></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+              No prediction records found in the database.
+              <div class="mt-2">
+                <a href="{{ url_for('main.predict') }}" class="btn btn-sm btn-primary">Make First Prediction</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

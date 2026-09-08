@@ -1,0 +1,282 @@
+{
+  "model_name": "Random Forest",
+  "accuracy": 0.7573,
+  "precision": 0.5288,
+  "recall": 0.7861,
+  "f1_score": 0.6323,
+  "roc_auc": 0.844,
+  "training_date": "2026-09-09 00:19:57",
+  "total_dataset_rows": 7043,
+  "features_count": 30,
+  "features": [
+    "tenure",
+    "MonthlyCharges",
+    "TotalCharges",
+    "gender_Male",
+    "SeniorCitizen_1",
+    "Partner_Yes",
+    "Dependents_Yes",
+    "PhoneService_Yes",
+    "MultipleLines_No phone service",
+    "MultipleLines_Yes",
+    "InternetService_Fiber optic",
+    "InternetService_No",
+    "OnlineSecurity_No internet service",
+    "OnlineSecurity_Yes",
+    "OnlineBackup_No internet service",
+    "OnlineBackup_Yes",
+    "DeviceProtection_No internet service",
+    "DeviceProtection_Yes",
+    "TechSupport_No internet service",
+    "TechSupport_Yes",
+    "StreamingTV_No internet service",
+    "StreamingTV_Yes",
+    "StreamingMovies_No internet service",
+    "StreamingMovies_Yes",
+    "Contract_One year",
+    "Contract_Two year",
+    "PaperlessBilling_Yes",
+    "PaymentMethod_Credit card (automatic)",
+    "PaymentMethod_Electronic check",
+    "PaymentMethod_Mailed check"
+  ],
+  "risk_thresholds": {
+    "low": 0.3,
+    "medium": 0.7
+  },
+  "confusion_matrix": {
+    "tn": 773,
+    "fp": 262,
+    "fn": 80,
+    "tp": 294,
+    "matrix": [
+      [
+        773,
+        262
+      ],
+      [
+        80,
+        294
+      ]
+    ]
+  },
+  "roc_curve": [
+    {
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    {
+      "fpr": 0.0077,
+      "tpr": 0.0963
+    },
+    {
+      "fpr": 0.0155,
+      "tpr": 0.1684
+    },
+    {
+      "fpr": 0.0242,
+      "tpr": 0.2273
+    },
+    {
+      "fpr": 0.0338,
+      "tpr": 0.2781
+    },
+    {
+      "fpr": 0.0415,
+      "tpr": 0.3128
+    },
+    {
+      "fpr": 0.0502,
+      "tpr": 0.3636
+    },
+    {
+      "fpr": 0.0599,
+      "tpr": 0.385
+    },
+    {
+      "fpr": 0.0696,
+      "tpr": 0.4519
+    },
+    {
+      "fpr": 0.0831,
+      "tpr": 0.4759
+    },
+    {
+      "fpr": 0.0937,
+      "tpr": 0.5053
+    },
+    {
+      "fpr": 0.1034,
+      "tpr": 0.5508
+    },
+    {
+      "fpr": 0.1121,
+      "tpr": 0.5802
+    },
+    {
+      "fpr": 0.1237,
+      "tpr": 0.5989
+    },
+    {
+      "fpr": 0.1459,
+      "tpr": 0.6283
+    },
+    {
+      "fpr": 0.1575,
+      "tpr": 0.6551
+    },
+    {
+      "fpr": 0.1826,
+      "tpr": 0.6818
+    },
+    {
+      "fpr": 0.2,
+      "tpr": 0.7059
+    },
+    {
+      "fpr": 0.2097,
+      "tpr": 0.738
+    },
+    {
+      "fpr": 0.2348,
+      "tpr": 0.762
+    },
+    {
+      "fpr": 0.2522,
+      "tpr": 0.7861
+    },
+    {
+      "fpr": 0.2812,
+      "tpr": 0.8075
+    },
+    {
+      "fpr": 0.2957,
+      "tpr": 0.8289
+    },
+    {
+      "fpr": 0.3256,
+      "tpr": 0.8476
+    },
+    {
+      "fpr": 0.3565,
+      "tpr": 0.8663
+    },
+    {
+      "fpr": 0.3932,
+      "tpr": 0.885
+    },
+    {
+      "fpr": 0.4444,
+      "tpr": 0.9064
+    },
+    {
+      "fpr": 0.487,
+      "tpr": 0.9278
+    },
+    {
+      "fpr": 0.5295,
+      "tpr": 0.9465
+    },
+    {
+      "fpr": 0.5894,
+      "tpr": 0.9626
+    },
+    {
+      "fpr": 0.6493,
+      "tpr": 0.984
+    },
+    {
+      "fpr": 0.9372,
+      "tpr": 1.0
+    },
+    {
+      "fpr": 1.0,
+      "tpr": 1.0
+    }
+  ],
+  "feature_importance": [
+    {
+      "feature": "tenure",
+      "importance": 0.1928
+    },
+    {
+      "feature": "Contract_Two year",
+      "importance": 0.1297
+    },
+    {
+      "feature": "TotalCharges",
+      "importance": 0.119
+    },
+    {
+      "feature": "InternetService_Fiber optic",
+      "importance": 0.0888
+    },
+    {
+      "feature": "MonthlyCharges",
+      "importance": 0.073
+    },
+    {
+      "feature": "PaymentMethod_Electronic check",
+      "importance": 0.0646
+    },
+    {
+      "feature": "Contract_One year",
+      "importance": 0.047
+    },
+    {
+      "feature": "OnlineSecurity_Yes",
+      "importance": 0.0347
+    },
+    {
+      "feature": "TechSupport_Yes",
+      "importance": 0.0237
+    },
+    {
+      "feature": "TechSupport_No internet service",
+      "importance": 0.0226
+    },
+    {
+      "feature": "DeviceProtection_No internet service",
+      "importance": 0.0199
+    },
+    {
+      "feature": "OnlineSecurity_No internet service",
+      "importance": 0.0178
+    },
+    {
+      "feature": "StreamingTV_No internet service",
+      "importance": 0.0165
+    },
+    {
+      "feature": "StreamingMovies_No internet service",
+      "importance": 0.0164
+    },
+    {
+      "feature": "PaperlessBilling_Yes",
+      "importance": 0.0159
+    }
+  ],
+  "model_comparisons": {
+    "Logistic Regression": {
+      "accuracy": 0.7381,
+      "precision": 0.5043,
+      "recall": 0.7834,
+      "f1_score": 0.6136,
+      "roc_auc": 0.8417
+    },
+    "Random Forest": {
+      "accuracy": 0.7573,
+      "precision": 0.5288,
+      "recall": 0.7861,
+      "f1_score": 0.6323,
+      "roc_auc": 0.844
+    },
+    "Gradient Boosting": {
+      "accuracy": 0.802,
+      "precision": 0.6599,
+      "recall": 0.5241,
+      "f1_score": 0.5842,
+      "roc_auc": 0.8436
+    }
+  }
+}

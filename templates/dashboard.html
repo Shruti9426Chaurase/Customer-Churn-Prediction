@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Customer Churn Prediction System{% endblock %}
+{% block header_title %}Analytics & Risk Intelligence Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Top KPI Cards Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Customers</div>
+        <div class="kpi-value text-primary">{{ stats.total_customers | default(7043) }}</div>
+        <div class="kpi-subtext">Telco Subscriber Base</div>
+        <i class="bi bi-people kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Observed Churn</div>
+        <div class="kpi-value text-danger">{{ stats.churn_count | default(1869) }}</div>
+        <div class="kpi-subtext">Historical Churners</div>
+        <i class="bi bi-person-x kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Churn Rate</div>
+        <div class="kpi-value text-warning">{{ stats.churn_rate | default(26.5) }}%</div>
+        <div class="kpi-subtext">Baseline Loss Rate</div>
+        <i class="bi bi-percent kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Monthly Fee</div>
+        <div class="kpi-value text-info">${{ stats.avg_monthly_charges | default(64.76) }}</div>
+        <div class="kpi-subtext">Monthly Recurring Rev</div>
+        <i class="bi bi-currency-dollar kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Model Accuracy</div>
+        <div class="kpi-value text-success">
+          {% if metadata and metadata.accuracy %}
+            {{ (metadata.accuracy * 100) | round(1) }}%
+          {% else %}
+            75.7%
+          {% endif %}
+        </div>
+        <div class="kpi-subtext">{{ metadata.model_name | default("Random Forest") }}</div>
+        <i class="bi bi-check-circle kpi-icon"></i>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-label">Model ROC-AUC</div>
+        <div class="kpi-value text-purple">
+          {{ metadata.roc_auc | default(0.844) }}
+        </div>
+        <div class="kpi-subtext">Separation Quality</div>
+        <i class="bi bi-graph-up kpi-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insights Banner -->
+  {% if stats.insights %}
+  <div class="alert alert-info border-0 shadow-sm mb-4 d-flex align-items-start gap-3">
+    <i class="bi bi-lightbulb fs-4 text-info mt-1"></i>
+    <div>
+      <h6 class="fw-bold mb-1">Automated Data-Driven Insights</h6>
+      <ul class="mb-0 ps-3 small">
+        {% for ins in stats.insights %}
+          <li>{{ ins }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Primary Charts Row 1 -->
+  <div class="row g-4 mb-4">
+    <!-- Churn vs Retention Distribution -->
+    <div class="col-lg-4">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-pie-chart text-primary"></i> Churn Distribution</h6>
+          <span class="badge bg-light text-muted border">Dataset Baseline</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+          <canvas id="churnPieChart"></canvas>
+        </div>
+        <div class="d-flex justify-content-around mt-3 text-center small border-top pt-2">
+          <div>
+            <span class="badge bg-success me-1">●</span> Retained: <strong>{{ stats.retain_count }}</strong>
+          </div>
+          <div>
+            <span class="badge bg-danger me-1">●</span> Churned: <strong>{{ stats.churn_count }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Churn Rate by Contract -->
+    <div class="col-lg-4">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-file-earmark-text text-warning"></i> Churn by Contract</h6>
+          <span class="badge bg-light text-muted border">Contractual Risk</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+          <canvas id="contractChart"></canvas>
+        </div>
+        <div class="text-center text-muted small mt-2">
+          Month-to-month contracts exhibit significantly higher churn susceptibility.
+        </div>
+      </div>
+    </div>
+
+    <!-- Churn by Internet Service -->
+    <div class="col-lg-4">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-router text-info"></i> Churn by Internet Service</h6>
+          <span class="badge bg-light text-muted border">Technology Tier</span>
+        </div>
+        <div style="height: 260px; position: relative;">
+          <canvas id="internetChart"></canvas>
+        </div>
+        <div class="text-center text-muted small mt-2">
+          Fiber optic users have higher churn rates, reflecting higher price sensitivity.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Charts Row 2 -->
+  <div class="row g-4 mb-4">
+    <!-- Tenure Cohorts Analysis -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-hourglass-split text-success"></i> Churn Across Tenure Cohorts</h6>
+          <span class="badge bg-light text-muted border">Lifecycle Stage</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="tenureCohortChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Feature Importance -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-bar-chart-steps text-primary"></i> Machine Learning Feature Importance</h6>
+          <span class="badge bg-primary-subtle text-primary border">{{ metadata.model_name | default("Model") }}</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="featureImportanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action & Prediction History Table Preview -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-lightning text-primary"></i> Quick Operations</h6>
+      <a href="{{ url_for('main.history') }}" class="btn btn-sm btn-outline-primary">View Full Prediction History</a>
+    </div>
+    <div class="d-flex flex-wrap gap-3">
+      <a href="{{ url_for('main.predict') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus me-1"></i> Predict Single Customer Churn
+      </a>
+      <a href="{{ url_for('main.batch') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-upload me-1"></i> Batch Predict CSV
+      </a>
+      <a href="{{ url_for('main.simulator') }}" class="btn btn-outline-warning">
+        <i class="bi bi-sliders me-1"></i> What-If Simulation
+      </a>
+      <a href="{{ url_for('main.retention') }}" class="btn btn-outline-danger">
+        <i class="bi bi-megaphone me-1"></i> View Retention Campaign
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Raw Chart Data passed to JS via JSON Script -->
+<script id="dashboard-data" type="application/json">
+{
+  "stats": {{ stats | tojson }},
+  "metadata": {{ metadata | tojson }}
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

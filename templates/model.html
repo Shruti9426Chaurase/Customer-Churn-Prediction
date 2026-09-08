@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Model Performance & Science - ChurnShield AI{% endblock %}
+{% block header_title %}Machine Learning Model Evaluation & Governance{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Active Model Status Banner -->
+  <div class="saas-card mb-4 bg-primary text-white border-0" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <span class="badge bg-white text-primary mb-2 px-3 py-1 fw-bold">PRODUCTION MODEL SELECTED</span>
+        <h3 class="fw-bold mb-1">{{ metadata.model_name | default("Random Forest") }}</h3>
+        <p class="mb-0 text-light opacity-90 small">
+          Trained with Stratified 80/20 train-test split on 7,043 customer instances. Evaluated on 1,409 unseen holdout test samples.
+        </p>
+      </div>
+      <div class="text-lg-end">
+        <div class="text-white-50 small text-uppercase">Training Timestamp</div>
+        <div class="fw-semibold">{{ metadata.training_date | default("2026-09-09") }}</div>
+        <div class="badge bg-success mt-1"><i class="bi bi-shield-check me-1"></i> Preprocessor Serialized</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real Metric Scorecards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl">
+      <div class="kpi-card text-center">
+        <div class="kpi-label">ROC-AUC Score</div>
+        <div class="kpi-value text-purple">{{ metadata.roc_auc }}</div>
+        <div class="kpi-subtext">Class Discrimination Power</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl">
+      <div class="kpi-card text-center">
+        <div class="kpi-label">Recall (Sensitivity)</div>
+        <div class="kpi-value text-danger">{{ (metadata.recall * 100) | round(1) }}%</div>
+        <div class="kpi-subtext">Churners Captured</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl">
+      <div class="kpi-card text-center">
+        <div class="kpi-label">F1-Score</div>
+        <div class="kpi-value text-primary">{{ metadata.f1_score }}</div>
+        <div class="kpi-subtext">Harmonic Mean</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl">
+      <div class="kpi-card text-center">
+        <div class="kpi-label">Precision</div>
+        <div class="kpi-value text-warning">{{ (metadata.precision * 100) | round(1) }}%</div>
+        <div class="kpi-subtext">True Churn Purity</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl">
+      <div class="kpi-card text-center">
+        <div class="kpi-label">Accuracy</div>
+        <div class="kpi-value text-success">{{ (metadata.accuracy * 100) | round(1) }}%</div>
+        <div class="kpi-subtext">Overall Correctness</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Comparison Benchmark Table -->
+  <div class="saas-card mb-4">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-trophy text-warning"></i> Multi-Model Benchmark Comparison</h6>
+      <span class="badge bg-success-subtle text-success border">Evaluated on Unseen Test Split (1,409 Rows)</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall (Key Metric)</th>
+            <th>F1-Score</th>
+            <th>ROC-AUC</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if metadata.model_comparisons %}
+            {% for name, comp in metadata.model_comparisons.items() %}
+            <tr {% if name == metadata.model_name %}class="table-primary fw-bold"{% endif %}>
+              <td>
+                {% if name == metadata.model_name %}
+                  <i class="bi bi-check-circle-fill text-primary me-1"></i>
+                {% endif %}
+                {{ name }}
+              </td>
+              <td>{{ (comp.accuracy * 100) | round(2) }}%</td>
+              <td>{{ (comp.precision * 100) | round(2) }}%</td>
+              <td>
+                <span class="badge {% if comp.recall > 0.70 %}bg-danger{% else %}bg-secondary{% endif %}">
+                  {{ (comp.recall * 100) | round(2) }}%
+                </span>
+              </td>
+              <td>{{ comp.f1_score }}</td>
+              <td><strong>{{ comp.roc_auc }}</strong></td>
+              <td>
+                {% if name == metadata.model_name %}
+                  <span class="badge bg-primary">Selected for Production</span>
+                {% else %}
+                  <span class="badge bg-secondary">Evaluated</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div class="text-muted small mt-2">
+      <i class="bi bi-info-circle me-1"></i> <strong>Selection Rationale:</strong> In subscriber attrition, false negatives (failing to identify a churner) are substantially more costly than false positives. {{ metadata.model_name }} was chosen due to its superior ROC-AUC score and strong Recall (capturing ~78.6% of all churning accounts).
+    </div>
+  </div>
+
+  <!-- Visual Diagnostics: Confusion Matrix & ROC Curve -->
+  <div class="row g-4 mb-4">
+    <!-- Confusion Matrix Heatmap / Breakdown -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-grid-3x3 text-primary"></i> Holdout Confusion Matrix</h6>
+          <span class="badge bg-light text-muted border">Test Split Counts</span>
+        </div>
+
+        {% if metadata.confusion_matrix %}
+        <div class="row g-3 text-center my-2">
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle">
+              <div class="text-muted small text-uppercase">True Negatives (TN)</div>
+              <div class="fs-3 fw-bold text-success">{{ metadata.confusion_matrix.tn }}</div>
+              <div class="text-muted small">Retained Correctly</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle">
+              <div class="text-muted small text-uppercase">False Positives (FP)</div>
+              <div class="fs-3 fw-bold text-warning">{{ metadata.confusion_matrix.fp }}</div>
+              <div class="text-muted small">False Alarm</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-danger-subtle border border-danger-subtle">
+              <div class="text-muted small text-uppercase">False Negatives (FN)</div>
+              <div class="fs-3 fw-bold text-danger">{{ metadata.confusion_matrix.fn }}</div>
+              <div class="text-muted small">Missed Churners</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded-3 bg-primary-subtle border border-primary-subtle">
+              <div class="text-muted small text-uppercase">True Positives (TP)</div>
+              <div class="fs-3 fw-bold text-primary">{{ metadata.confusion_matrix.tp }}</div>
+              <div class="text-muted small">Churners Detected</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-3">
+          <img src="{{ url_for('static', filename='images/confusion_matrix.png') }}" alt="Confusion Matrix" class="img-fluid rounded border shadow-sm" style="max-height: 240px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- ROC Curve -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-graph-up-arrow text-primary"></i> ROC Curves Comparison</h6>
+          <span class="badge bg-light text-muted border">Sensitivity vs False Alarms</span>
+        </div>
+        
+        <div class="text-center my-2">
+          <img src="{{ url_for('static', filename='images/roc_curve.png') }}" alt="ROC Curve" class="img-fluid rounded border shadow-sm" style="max-height: 280px;">
+        </div>
+        <div class="text-muted small mt-2 text-center">
+          Area Under Curve (AUC = <strong>{{ metadata.roc_auc }}</strong>) demonstrates significant diagnostic accuracy above random chance (0.50).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- University Viva Presentation Metric Guide -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-mortarboard-fill text-primary"></i> University Viva & Evaluation Quick Guide</h6>
+      <span class="badge bg-info-subtle text-info border">Examination Reference</span>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="p-3 bg-body rounded-3 border h-100">
+          <h6 class="fw-bold text-success"><i class="bi bi-check2-circle me-1"></i> Accuracy</h6>
+          <p class="text-muted small mb-1"><strong>Definition:</strong> Percentage of total predictions that were correct.</p>
+          <div class="small text-secondary">
+            Formula: <code>(TP + TN) / Total</code>. High overall rate, but can be misleading in imbalanced datasets without checking recall.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="p-3 bg-body rounded-3 border h-100">
+          <h6 class="fw-bold text-warning"><i class="bi bi-bullseye me-1"></i> Precision</h6>
+          <p class="text-muted small mb-1"><strong>Definition:</strong> Of customers predicted to churn, how many actually churned.</p>
+          <div class="small text-secondary">
+            Formula: <code>TP / (TP + FP)</code>. Measures cost-efficiency of marketing intervention to prevent wasting incentives.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="p-3 bg-body rounded-3 border h-100">
+          <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle me-1"></i> Recall (Sensitivity)</h6>
+          <p class="text-muted small mb-1"><strong>Definition:</strong> Of customers who actually churned, how many the model identified.</p>
+          <div class="small text-secondary">
+            Formula: <code>TP / (TP + FN)</code>. Crucial in churn problems to ensure high-value defecting accounts are not missed.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="p-3 bg-body rounded-3 border h-100">
+          <h6 class="fw-bold text-primary"><i class="bi bi-balance me-1"></i> F1-Score</h6>
+          <p class="text-muted small mb-1"><strong>Definition:</strong> The harmonic mean balancing precision and recall.</p>
+          <div class="small text-secondary">
+            Formula: <code>2 * (Precision * Recall) / (Precision + Recall)</code>. Provides a single unified metric under class imbalance.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="p-3 bg-body rounded-3 border h-100">
+          <h6 class="fw-bold text-purple"><i class="bi bi-bezier2 me-1"></i> ROC-AUC</h6>
+          <p class="text-muted small mb-1"><strong>Definition:</strong> Measures how well the model separates churners from non-churners across all thresholds.</p>
+          <div class="small text-secondary">
+            A score of 1.0 represents perfect discrimination, 0.50 denotes random guessing. Our score of <strong>{{ metadata.roc_auc }}</strong> indicates robust predictive separation.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

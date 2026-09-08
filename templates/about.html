@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}About & Architecture - ChurnShield AI{% endblock %}
+{% block header_title %}System Architecture & Technical Documentation{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Project Overview Card -->
+  <div class="saas-card mb-4">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-info-circle text-primary"></i> Project Overview</h5>
+      <span class="badge bg-primary-subtle text-primary border">University ML Capstone</span>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <h6 class="fw-bold">Problem Statement</h6>
+        <p class="text-muted small">
+          Customer acquisition costs (CAC) typically exceed retention costs by 5 to 7 times in subscription business models. Subscriber attrition degrades predictable recurring revenue and customer lifetime value (LTV). Identifying early warning signs and executing proactive, targeted customer success outreach before contract termination is vital to sustainable business growth.
+        </p>
+
+        <h6 class="fw-bold mt-3">Primary Objectives</h6>
+        <ul class="text-muted small ps-3">
+          <li>Accurately forecast individual customer churn likelihood using calibrated probabilistic classifiers.</li>
+          <li>Assign standardized multi-tier risk categories (Low, Medium, High) with 0-100 risk scoring.</li>
+          <li>Provide transparent feature attribution explaining which observed factors correlate with the churn score.</li>
+          <li>Provide actionable, prioritized retention plays (e.g. contract migration incentives, technical support packages).</li>
+          <li>Enable interactive What-If scenario simulations for marketing strategy planning.</li>
+        </ul>
+      </div>
+
+      <div class="col-lg-6">
+        <h6 class="fw-bold">Dataset Specification</h6>
+        <p class="text-muted small">
+          Trained on the standardized <strong>IBM Telco Customer Churn dataset</strong> containing 7,043 subscriber records and 21 attributes encompassing demographic profiles, subscribed services, account tenure, contractual commitments, and billing modalities.
+        </p>
+
+        <h6 class="fw-bold mt-3">Algorithms Evaluated</h6>
+        <ul class="text-muted small ps-3">
+          <li><strong>Logistic Regression:</strong> Linear baseline with class weighting to handle class imbalance.</li>
+          <li><strong>Random Forest:</strong> Non-linear ensemble of decision trees mitigating overfitting via bagging.</li>
+          <li><strong>Gradient Boosting:</strong> Sequential ensemble optimizing residual pseudo-loss gradients.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End-to-End Workflow Diagram -->
+  <div class="saas-card mb-4">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-diagram-2 text-success"></i> End-to-End System Workflow</h5>
+      <span class="badge bg-success-subtle text-success border">Production Pipeline Architecture</span>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 py-4 text-center">
+      <div class="workflow-step border-primary">
+        <i class="bi bi-input-cursor-text text-primary fs-5"></i>
+        <div>
+          <div>Customer Input</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">Web Form / CSV</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-info">
+        <i class="bi bi-funnel text-info fs-5"></i>
+        <div>
+          <div>Preprocessing</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">ColumnTransformer</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-purple">
+        <i class="bi bi-cpu text-purple fs-5"></i>
+        <div>
+          <div>ML Inference</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">Random Forest</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-warning">
+        <i class="bi bi-percent text-warning fs-5"></i>
+        <div>
+          <div>Churn Probability</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">P(Churn | X)</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-danger">
+        <i class="bi bi-shield-exclamation text-danger fs-5"></i>
+        <div>
+          <div>Risk Categorization</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">Low / Med / High</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-primary">
+        <i class="bi bi-diagram-3 text-primary fs-5"></i>
+        <div>
+          <div>Explainability</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">Factor Weights</span>
+        </div>
+      </div>
+
+      <i class="bi bi-arrow-right workflow-arrow"></i>
+
+      <div class="workflow-step border-success">
+        <i class="bi bi-award text-success fs-5"></i>
+        <div>
+          <div>Retention Action</div>
+          <span class="text-muted small" style="font-size: 0.7rem;">Contextual Playbook</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack Grid -->
+  <div class="saas-card mb-4">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-stack text-primary"></i> Technology Stack</h6>
+    </div>
+    <div class="row g-3 text-center">
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-body border rounded-3 h-100">
+          <i class="bi bi-filetype-py fs-2 text-primary"></i>
+          <h6 class="fw-bold mt-2 mb-1">Python 3 & Flask</h6>
+          <div class="text-muted small">WSGI Backend & Jinja2 Templates</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-body border rounded-3 h-100">
+          <i class="bi bi-gear-wide-connected fs-2 text-success"></i>
+          <h6 class="fw-bold mt-2 mb-1">Scikit-Learn</h6>
+          <div class="text-muted small">Pipelines & Tree Ensembles</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-body border rounded-3 h-100">
+          <i class="bi bi-database fs-2 text-warning"></i>
+          <h6 class="fw-bold mt-2 mb-1">SQLite & SQLAlchemy</h6>
+          <div class="text-muted small">Audit Logging & Prediction Records</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-body border rounded-3 h-100">
+          <i class="bi bi-pie-chart fs-2 text-info"></i>
+          <h6 class="fw-bold mt-2 mb-1">Bootstrap 5 & Chart.js</h6>
+          <div class="text-muted small">Modern Reactive SaaS Frontend</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Limitations & Future Scope -->
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title text-warning"><i class="bi bi-exclamation-triangle"></i> Genuine Technical Limitations</h6>
+        </div>
+        <ul class="text-muted small ps-3">
+          <li><strong>Data Stationarity:</strong> Assumes subscriber behavior patterns remain stationary; real-world shifts require automated scheduled retraining.</li>
+          <li><strong>Correlation vs Causation:</strong> Observable factor weights reflect statistical correlations in historical cohorts and should not be misconstrued as absolute causal mechanisms.</li>
+          <li><strong>Cross-Selling Telemetry:</strong> Dataset lacks app engagement frequency, live ticket sentiment, or latency telemetry.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title text-success"><i class="bi bi-rocket-takeoff"></i> Future Engineering Scope</h6>
+        </div>
+        <ul class="text-muted small ps-3">
+          <li><strong>Automated Retraining CI/CD:</strong> Scheduled data drift detection and model retraining with automated shadow deployments.</li>
+          <li><strong>Enterprise CRM Integrations:</strong> Real-time webhooks into Salesforce, HubSpot, or Zendesk for automated ticket escalation.</li>
+          <li><strong>Multi-Arm Bandit A/B Testing:</strong> Experimenting with competing retention discount offers to measure true causal intervention uplift.</li>
+          <li><strong>Customer Lifetime Value (CLV):</strong> Joint modeling of churn risk alongside revenue potential for value-weighted prioritization.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

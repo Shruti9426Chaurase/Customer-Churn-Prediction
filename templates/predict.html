@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Customer Churn - ChurnShield AI{% endblock %}
+{% block header_title %}Individual Customer Risk Analysis{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Top Demo Bar -->
+  <div class="saas-card mb-4 bg-primary-subtle border-primary-subtle">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h6 class="fw-bold mb-1 text-primary"><i class="bi bi-lightning-charge-fill me-1"></i> Fast Demo Presets</h6>
+        <div class="text-muted small">Instantly load typical customer profiles to test ML predictions during demonstrations.</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-sm btn-danger fw-semibold" id="btnLoadHighRisk">
+          <i class="bi bi-exclamation-triangle me-1"></i> Load High-Risk Sample
+        </button>
+        <button type="button" class="btn btn-sm btn-warning fw-semibold text-dark" id="btnLoadMedRisk">
+          <i class="bi bi-shield me-1"></i> Load Moderate-Risk Sample
+        </button>
+        <button type="button" class="btn btn-sm btn-success fw-semibold" id="btnLoadLowRisk">
+          <i class="bi bi-shield-check me-1"></i> Load Low-Risk Sample
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prediction Form -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-person-badge text-primary"></i> Customer Attribute Profile</h5>
+      <span class="text-muted small">* All fields are processed through the Scikit-Learn ColumnTransformer</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.predict') }}" id="predictForm">
+      <!-- Section 1: Demographics -->
+      <div class="form-section-title">
+        <i class="bi bi-people"></i> 1. Customer Demographics
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Customer ID</label>
+          <input type="text" class="form-control" name="customerID" id="customerID" value="CUST-7829" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Gender</label>
+          <select class="form-select" name="gender" id="gender">
+            <option value="Female">Female</option>
+            <option value="Male" selected>Male</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Senior Citizen?</label>
+          <select class="form-select" name="SeniorCitizen" id="SeniorCitizen">
+            <option value="0" selected>No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Partner?</label>
+          <select class="form-select" name="Partner" id="Partner">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Dependents?</label>
+          <select class="form-select" name="Dependents" id="Dependents">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section 2: Services Subscribed -->
+      <div class="form-section-title">
+        <i class="bi bi-router"></i> 2. Subscribed Services
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Phone Service</label>
+          <select class="form-select" name="PhoneService" id="PhoneService">
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Multiple Lines</label>
+          <select class="form-select" name="MultipleLines" id="MultipleLines">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+            <option value="No phone service">No phone service</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Internet Service</label>
+          <select class="form-select" name="InternetService" id="InternetService">
+            <option value="Fiber optic" selected>Fiber optic</option>
+            <option value="DSL">DSL</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Online Security</label>
+          <select class="form-select" name="OnlineSecurity" id="OnlineSecurity">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Online Backup</label>
+          <select class="form-select" name="OnlineBackup" id="OnlineBackup">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Device Protection</label>
+          <select class="form-select" name="DeviceProtection" id="DeviceProtection">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tech Support</label>
+          <select class="form-select" name="TechSupport" id="TechSupport">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Streaming TV</label>
+          <select class="form-select" name="StreamingTV" id="StreamingTV">
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Streaming Movies</label>
+          <select class="form-select" name="StreamingMovies" id="StreamingMovies">
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+            <option value="No internet service">No internet service</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section 3: Account & Billing -->
+      <div class="form-section-title">
+        <i class="bi bi-credit-card"></i> 3. Contract & Billing Details
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <label class="form-label">Tenure (Months): <strong id="tenureValue">2</strong></label>
+          <input type="range" class="form-range" name="tenure" id="tenure" min="0" max="72" value="2" oninput="document.getElementById('tenureValue').textContent = this.value; autoCalcTotal();">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Contract Type</label>
+          <select class="form-select" name="Contract" id="Contract">
+            <option value="Month-to-month" selected>Month-to-month</option>
+            <option value="One year">One year</option>
+            <option value="Two year">Two year</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Paperless Billing</label>
+          <select class="form-select" name="PaperlessBilling" id="PaperlessBilling">
+            <option value="Yes" selected>Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Payment Method</label>
+          <select class="form-select" name="PaymentMethod" id="PaymentMethod">
+            <option value="Electronic check" selected>Electronic check</option>
+            <option value="Mailed check">Mailed check</option>
+            <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+            <option value="Credit card (automatic)">Credit card (automatic)</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Monthly Charges ($ USD)</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" step="0.05" min="15" max="150" class="form-control" name="MonthlyCharges" id="MonthlyCharges" value="89.50" required onchange="autoCalcTotal();">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Total Charges ($ USD)</label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" step="0.05" min="0" class="form-control" name="TotalCharges" id="TotalCharges" value="179.00" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="autoCalcTotal()">Calculate</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+        <button type="reset" class="btn btn-outline-secondary px-4">Reset Form</button>
+        <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold" id="submitBtn">
+          <i class="bi bi-shield-check me-1"></i> Predict Churn Probability
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/prediction.js') }}"></script>
+{% endblock %}

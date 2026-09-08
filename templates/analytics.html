@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Deep Analytics - ChurnShield AI{% endblock %}
+{% block header_title %}Deep Cohort Analytics & Segment Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Key Automated Insights Box -->
+  <div class="saas-card mb-4 border-start border-4 border-primary">
+    <div class="d-flex align-items-start gap-3">
+      <div class="p-3 bg-primary-subtle text-primary rounded-circle">
+        <i class="bi bi-lightbulb-fill fs-3"></i>
+      </div>
+      <div>
+        <h5 class="fw-bold mb-2">Empirical Cohort Discoveries</h5>
+        <div class="row g-3 mt-1">
+          {% for ins in stats.insights %}
+          <div class="col-md-6">
+            <div class="p-3 bg-body rounded-3 border">
+              <i class="bi bi-check2-circle text-primary me-2"></i>
+              <span class="small">{{ ins }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segment Exploration Charts -->
+  <div class="row g-4 mb-4">
+    <!-- Payment Methods Churn Rate -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-credit-card-2-front text-primary"></i> Churn by Payment Method</h6>
+          <span class="badge bg-light text-muted border">Payment Friction</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="paymentChart"></canvas>
+        </div>
+        <div class="text-muted small mt-2 text-center">
+          Automated bank transfer and credit cards correlate with substantially higher customer retention.
+        </div>
+      </div>
+    </div>
+
+    <!-- Contract Retention Gap -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title"><i class="bi bi-journal-check text-success"></i> Churn Gap Across Contract Types</h6>
+          <span class="badge bg-light text-muted border">Commitment Effect</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          <canvas id="contractDetailedChart"></canvas>
+        </div>
+        <div class="text-muted small mt-2 text-center">
+          Moving customers from month-to-month to annual commitments reduces churn probability by over 35%.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dataset Detailed Segmentation Table -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-bar-chart-line text-primary"></i> Comprehensive Cohort Breakdown</h6>
+      <span class="badge bg-light text-muted border">7,043 Customer Records</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Segment Dimension</th>
+            <th>Category / Value</th>
+            <th>Cohort Size</th>
+            <th>Observed Churn Rate</th>
+            <th>Risk Assessment</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if stats.contract_stats %}
+            {% for cname, cdata in stats.contract_stats.items() %}
+            <tr>
+              <td><strong>Contract Term</strong></td>
+              <td>{{ cname }}</td>
+              <td>{{ cdata.total }} customers</td>
+              <td><strong>{{ cdata.churn_rate }}%</strong></td>
+              <td>
+                {% if cdata.churn_rate > 35 %}
+                  <span class="badge bg-danger">Critical Risk</span>
+                {% elif cdata.churn_rate > 15 %}
+                  <span class="badge bg-warning text-dark">Moderate Risk</span>
+                {% else %}
+                  <span class="badge bg-success">Low Risk / Sticky</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+
+          {% if stats.internet_stats %}
+            {% for iname, idata in stats.internet_stats.items() %}
+            <tr>
+              <td><strong>Internet Tier</strong></td>
+              <td>{{ iname }}</td>
+              <td>{{ idata.total }} customers</td>
+              <td><strong>{{ idata.churn_rate }}%</strong></td>
+              <td>
+                {% if idata.churn_rate > 35 %}
+                  <span class="badge bg-danger">Elevated Churn</span>
+                {% else %}
+                  <span class="badge bg-success">Stable</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+
+          {% if stats.payment_stats %}
+            {% for pname, pdata in stats.payment_stats.items() %}
+            <tr>
+              <td><strong>Billing Channel</strong></td>
+              <td>{{ pname }}</td>
+              <td>{{ pdata.total }} customers</td>
+              <td><strong>{{ pdata.churn_rate }}%</strong></td>
+              <td>
+                {% if pdata.churn_rate > 35 %}
+                  <span class="badge bg-danger">High Attrition Channel</span>
+                {% else %}
+                  <span class="badge bg-success">Low Attrition</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script id="analytics-data" type="application/json">
+{{ stats | tojson }}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const dataEl = document.getElementById('analytics-data');
+  if (!dataEl) return;
+  const stats = JSON.parse(dataEl.textContent);
+
+  // 1. Payment Methods Chart
+  const payCtx = document.getElementById('paymentChart');
+  if (payCtx && stats.payment_stats) {
+    const labels = Object.keys(stats.payment_stats);
+    const rates = labels.map(k => stats.payment_stats[k].churn_rate);
+
+    new Chart(payCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Churn Rate (%)',
+          data: rates,
+          backgroundColor: [AppCharts.colors.danger, AppCharts.colors.warning, AppCharts.colors.success, AppCharts.colors.success],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 55, ticks: { callback: v => v + '%', color: AppCharts.getTextColor() }, grid: { color: AppCharts.getGridColor() } },
+          x: { ticks: { color: AppCharts.getTextColor(), font: { size: 10 } }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // 2. Contract Detailed Chart
+  const contractCtx = document.getElementById('contractDetailedChart');
+  if (contractCtx && stats.contract_stats) {
+    const labels = Object.keys(stats.contract_stats);
+    const rates = labels.map(k => stats.contract_stats[k].churn_rate);
+
+    new Chart(contractCtx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Churn Rate (%)',
+          data: rates,
+          backgroundColor: [AppCharts.colors.danger, AppCharts.colors.warning, AppCharts.colors.success],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 55, ticks: { callback: v => v + '%', color: AppCharts.getTextColor() }, grid: { color: AppCharts.getGridColor() } },
+          x: { ticks: { color: AppCharts.getTextColor() }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

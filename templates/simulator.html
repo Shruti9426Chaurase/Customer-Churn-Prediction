@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}What-If Churn Simulator - ChurnShield AI{% endblock %}
+{% block header_title %}What-If Scenario Simulator{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="saas-card mb-4 bg-primary-subtle border-primary-subtle">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <h6 class="fw-bold mb-1 text-primary"><i class="bi bi-sliders me-1"></i> Interactive Retention Simulator</h6>
+        <div class="text-muted small">
+          Simulate policy adjustments, service bundles, and pricing incentives to observe how the ML model estimates customer churn risk changes.
+        </div>
+      </div>
+      <div>
+        <button type="button" class="btn btn-sm btn-primary fw-semibold" id="btnLoadSimulatorPreset">
+          <i class="bi bi-arrow-repeat me-1"></i> Load High-Risk Baseline
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Results Panel (Updated dynamically) -->
+  <div class="saas-card mb-4 border-2" id="resultsCard" style="display: none;">
+    <div class="saas-card-header">
+      <h5 class="saas-card-title"><i class="bi bi-clipboard2-data text-primary"></i> Simulation Outcome Comparison</h5>
+      <span class="badge bg-success" id="deltaBadge">-0.0%</span>
+    </div>
+
+    <div class="row g-4 align-items-center mb-3">
+      <!-- Baseline Score -->
+      <div class="col-md-4 text-center border-end">
+        <div class="text-muted small fw-semibold text-uppercase">Baseline Scenario</div>
+        <div class="display-5 fw-bold text-danger my-1" id="baseProbText">--%</div>
+        <span class="badge bg-danger-subtle text-danger" id="baseCategory">High Risk</span>
+      </div>
+
+      <!-- Arrow & Delta -->
+      <div class="col-md-4 text-center">
+        <div class="d-inline-flex p-3 rounded-circle bg-light mb-2">
+          <i class="bi bi-arrow-right-circle-fill fs-1 text-primary"></i>
+        </div>
+        <div class="fw-bold fs-5" id="deltaText">Delta: --%</div>
+        <div class="text-muted small">Simulated Model Shift</div>
+      </div>
+
+      <!-- Modified Score -->
+      <div class="col-md-4 text-center border-start">
+        <div class="text-muted small fw-semibold text-uppercase">Modified Scenario</div>
+        <div class="display-5 fw-bold text-success my-1" id="modProbText">--%</div>
+        <span class="badge bg-success-subtle text-success" id="modCategory">Low Risk</span>
+      </div>
+    </div>
+
+    <!-- Narrative Explanation Box -->
+    <div class="p-3 bg-body rounded-3 border">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <i class="bi bi-chat-left-dots-fill text-primary"></i>
+        <strong>Model Simulation Narrative:</strong>
+      </div>
+      <p class="mb-0 text-muted small" id="narrativeText">
+        Simulation completed.
+      </p>
+    </div>
+
+    <div class="alert alert-light border mt-3 mb-0 small text-muted">
+      <i class="bi bi-info-circle me-1"></i> <strong>Methodological Caveat:</strong> Machine learning predictions estimate statistical correlation based on historical data. They should be used to support strategic retention decisions, not as deterministic real-world guarantees.
+    </div>
+  </div>
+
+  <!-- Interactive Controls Form -->
+  <div class="row g-4">
+    <!-- Left Column: Baseline Configuration -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title text-danger"><i class="bi bi-person-x"></i> 1. Baseline Customer State</h6>
+          <span class="badge bg-danger-subtle text-danger">Current Status</span>
+        </div>
+
+        <form id="baselineForm">
+          <div class="mb-3">
+            <label class="form-label">Contract Commitment</label>
+            <select class="form-select" id="base_Contract">
+              <option value="Month-to-month" selected>Month-to-month</option>
+              <option value="One year">One year</option>
+              <option value="Two year">Two year</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Monthly Charges ($): <strong id="base_monthly_val">$89</strong></label>
+              <input type="range" class="form-range" id="base_MonthlyCharges" min="20" max="130" value="89" oninput="document.getElementById('base_monthly_val').textContent = '$' + this.value;">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Tenure (Months): <strong id="base_tenure_val">2</strong></label>
+              <input type="range" class="form-range" id="base_tenure" min="0" max="72" value="2" oninput="document.getElementById('base_tenure_val').textContent = this.value;">
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Tech Support</label>
+              <select class="form-select" id="base_TechSupport">
+                <option value="No" selected>No Tech Support</option>
+                <option value="Yes">Active Tech Support</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Online Security</label>
+              <select class="form-select" id="base_OnlineSecurity">
+                <option value="No" selected>No Online Security</option>
+                <option value="Yes">Active Online Security</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Internet Service</label>
+              <select class="form-select" id="base_InternetService">
+                <option value="Fiber optic" selected>Fiber optic</option>
+                <option value="DSL">DSL</option>
+                <option value="No">No Internet</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Payment Method</label>
+              <select class="form-select" id="base_PaymentMethod">
+                <option value="Electronic check" selected>Electronic check</option>
+                <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                <option value="Credit card (automatic)">Credit card (automatic)</option>
+                <option value="Mailed check">Mailed check</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Modified Scenario Controls -->
+    <div class="col-lg-6">
+      <div class="saas-card h-100">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title text-success"><i class="bi bi-person-check"></i> 2. Modified Strategy Scenario</h6>
+          <span class="badge bg-success-subtle text-success">Proposed Actions</span>
+        </div>
+
+        <form id="modifiedForm">
+          <div class="mb-3">
+            <label class="form-label">Contract Offer</label>
+            <select class="form-select border-success" id="mod_Contract">
+              <option value="Month-to-month">Month-to-month</option>
+              <option value="One year" selected>One year Contract (Proposed)</option>
+              <option value="Two year">Two year Contract (Proposed)</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Discounted Monthly Fee: <strong id="mod_monthly_val">$65</strong></label>
+              <input type="range" class="form-range" id="mod_MonthlyCharges" min="20" max="130" value="65" oninput="document.getElementById('mod_monthly_val').textContent = '$' + this.value;">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Nurtured Tenure: <strong id="mod_tenure_val">14</strong></label>
+              <input type="range" class="form-range" id="mod_tenure" min="0" max="72" value="14" oninput="document.getElementById('mod_tenure_val').textContent = this.value;">
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Add Tech Support?</label>
+              <select class="form-select border-success" id="mod_TechSupport">
+                <option value="No">No Tech Support</option>
+                <option value="Yes" selected>Bundle Free Tech Support</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Add Online Security?</label>
+              <select class="form-select border-success" id="mod_OnlineSecurity">
+                <option value="No">No Online Security</option>
+                <option value="Yes" selected>Include Security Trial</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Internet Service</label>
+              <select class="form-select" id="mod_InternetService">
+                <option value="Fiber optic" selected>Fiber optic</option>
+                <option value="DSL">DSL</option>
+                <option value="No">No Internet</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Autopay Migration</label>
+              <select class="form-select border-success" id="mod_PaymentMethod">
+                <option value="Electronic check">Electronic check</option>
+                <option value="Bank transfer (automatic)" selected>Bank transfer (automatic)</option>
+                <option value="Credit card (automatic)">Credit card (automatic)</option>
+                <option value="Mailed check">Mailed check</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Run Simulation CTA Button -->
+  <div class="text-center mt-4">
+    <button type="button" class="btn btn-primary btn-lg px-5 fw-bold shadow" id="btnRunSimulation">
+      <i class="bi bi-play-circle-fill me-2"></i> Execute What-If Simulation
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/simulator.js') }}"></script>
+{% endblock %}

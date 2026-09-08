@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Retention Campaign - ChurnShield AI{% endblock %}
+{% block header_title %}Active Retention Campaign & Account Prioritization{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Top Action & KPI Banner -->
+  <div class="saas-card mb-4 bg-danger-subtle border-danger-subtle">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <span class="badge bg-danger mb-1"><i class="bi bi-bullseye me-1"></i> Targeted Interventions</span>
+        <h5 class="fw-bold mb-1 text-danger">Priority Retention Campaign Queue</h5>
+        <div class="text-muted small">
+          Accounts with calibrated churn probabilities &ge; 70% sorted by attrition urgency. Use targeted incentives to mitigate revenue loss.
+        </div>
+      </div>
+      <div>
+        {% if download_file %}
+        <a href="{{ url_for('main.download_file', filename=download_file) }}" class="btn btn-danger btn-lg px-4 fw-bold">
+          <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Retention CSV
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaign Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Accounts Flagged</div>
+        <div class="kpi-value text-danger">{{ total_high_risk }}</div>
+        <div class="kpi-subtext">Immediate Outreach Required</div>
+        <i class="bi bi-shield-exclamation kpi-icon"></i>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Average Risk Probability</div>
+        <div class="kpi-value text-warning">
+          {% if campaign_list %}
+            {{ (campaign_list | map(attribute='probability_percent') | sum / campaign_list|length) | round(1) }}%
+          {% else %}
+            81.4%
+          {% endif %}
+        </div>
+        <div class="kpi-subtext">High Risk Cohort Mean</div>
+        <i class="bi bi-percent kpi-icon"></i>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card">
+        <div class="kpi-label">Strategy Focus</div>
+        <div class="kpi-value text-primary">Contract & Care</div>
+        <div class="kpi-subtext">1-Year Lock-in & Tech Support</div>
+        <i class="bi bi-check2-circle kpi-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- High Risk Accounts Table -->
+  <div class="saas-card">
+    <div class="saas-card-header flex-wrap gap-2">
+      <h6 class="saas-card-title"><i class="bi bi-list-check text-primary"></i> High-Risk Accounts Prioritization List</h6>
+      
+      <div class="d-flex align-items-center gap-2">
+        <input type="text" id="campaignSearch" class="form-control form-control-sm" placeholder="Search Customer ID..." style="width: 200px;">
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-custom" id="campaignTable">
+        <thead>
+          <tr>
+            <th>Priority Rank</th>
+            <th>Customer ID</th>
+            <th>Churn Probability</th>
+            <th>Risk Tier</th>
+            <th>Tenure</th>
+            <th>Contract Type</th>
+            <th>Monthly Charges</th>
+            <th>Prescribed Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in campaign_list %}
+          <tr>
+            <td><span class="badge bg-secondary">#{{ loop.index }}</span></td>
+            <td><strong>{{ item.customer_id }}</strong></td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                  <div class="progress-bar bg-danger" style="width: {{ item.probability_percent }}%;"></div>
+                </div>
+                <span class="fw-bold text-danger">{{ item.probability_percent }}%</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                {{ item.risk_category }}
+              </span>
+            </td>
+            <td>{{ item.tenure }} months</td>
+            <td><span class="badge bg-light text-dark border">{{ item.contract }}</span></td>
+            <td><strong>${{ item.monthly_charges }}</strong></td>
+            <td>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle p-2">
+                <i class="bi bi-arrow-right-short me-1"></i>{{ item.action }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-4 text-muted">
+              No high-risk customer predictions logged yet. Run single predictions or a batch CSV upload.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const searchInput = document.getElementById('campaignSearch');
+  const table = document.getElementById('campaignTable');
+
+  if (searchInput && table) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}

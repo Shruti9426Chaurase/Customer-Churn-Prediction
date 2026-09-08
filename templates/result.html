@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Result - {{ result.customer_id }}{% endblock %}
+{% block header_title %}Prediction Intelligence Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <!-- Top Action Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="badge bg-secondary mb-1">Customer ID: {{ result.customer_id }}</span>
+      <h4 class="fw-bold mb-0">Attrition Risk Assessment</h4>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.simulator') }}" class="btn btn-warning text-dark fw-semibold">
+        <i class="bi bi-sliders me-1"></i> Open in What-If Simulator
+      </a>
+      <a href="{{ url_for('main.predict') }}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left me-1"></i> New Prediction
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Risk Meter & Gauge Card -->
+    <div class="col-lg-5">
+      <div class="saas-card text-center h-100 d-flex flex-column justify-content-between">
+        <div>
+          <span class="text-uppercase fw-bold text-muted small letter-spacing-1">Machine Learning Evaluation</span>
+          <h5 class="fw-bold mt-1 mb-4">Customer Churn Probability</h5>
+
+          <!-- Circular Risk Meter -->
+          <div class="risk-circle risk-{{ result.badge_class }}">
+            <div class="score-number" style="color: {{ result.color_hex }};">
+              {{ result.probability_percent }}%
+            </div>
+            <div class="score-label">Churn Risk</div>
+          </div>
+
+          <!-- Risk Category Badge -->
+          <div class="mb-3">
+            <span class="risk-badge-lg badge bg-{{ result.badge_class }} fs-6">
+              <i class="bi {% if result.risk_category == 'High Risk' %}bi-exclamation-octagon{% elif result.risk_category == 'Medium Risk' %}bi-exclamation-triangle{% else %}bi-shield-check{% endif %} me-1"></i>
+              {{ result.risk_category }}
+            </span>
+          </div>
+
+          <p class="text-muted small px-3">
+            The model predicts that this customer has a <strong>{{ result.probability_percent }}%</strong> likelihood of cancelling their subscription under current conditions.
+          </p>
+        </div>
+
+        <div class="p-3 bg-body rounded-3 border text-start mt-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small text-muted">Risk Score Scale:</span>
+            <span class="small fw-bold">{{ result.risk_score }} / 100</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-{{ result.badge_class }}" role="progressbar" style="width: {{ result.risk_score }}%;"></div>
+          </div>
+          <div class="d-flex justify-content-between mt-2 small text-muted">
+            <span>Low (&lt;30)</span>
+            <span>Medium (30-69)</span>
+            <span>High (&ge;70)</span>
+          </div>
+          <div class="mt-2 text-muted small border-top pt-2">
+            <i class="bi bi-cpu me-1"></i> Model: <strong>{{ result.model_name }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contributing Factors & Retention Strategy -->
+    <div class="col-lg-7">
+      <!-- Feature Factors -->
+      <div class="saas-card mb-4">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title">
+            <i class="bi bi-diagram-3 text-primary"></i> Key Factors Influencing Prediction
+          </h6>
+          <span class="badge bg-light text-muted border">Observable Associations</span>
+        </div>
+        <p class="text-muted small mb-3">
+          <em>Important note:</em> Machine learning feature weights denote statistical associations correlated with churn risk and do not imply direct causality.
+        </p>
+
+        <div class="d-flex flex-column gap-2">
+          {% for factor in result.factors %}
+          <div class="p-3 border rounded-3 bg-body d-flex align-items-start gap-3">
+            <div class="mt-1">
+              {% if 'High Risk' in factor.impact %}
+                <i class="bi bi-arrow-up-circle-fill text-danger fs-5"></i>
+              {% elif 'Moderate' in factor.impact %}
+                <i class="bi bi-dash-circle-fill text-warning fs-5"></i>
+              {% else %}
+                <i class="bi bi-arrow-down-circle-fill text-success fs-5"></i>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center">
+                <strong class="text-main">{{ factor.factor }}</strong>
+                <span class="badge {% if 'High' in factor.impact %}bg-danger-subtle text-danger{% elif 'Moderate' in factor.impact %}bg-warning-subtle text-warning{% else %}bg-success-subtle text-success{% endif %}">
+                  {{ factor.impact }}
+                </span>
+              </div>
+              <div class="text-muted small mt-1">{{ factor.detail }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Actionable Retention Recommendations -->
+      <div class="saas-card">
+        <div class="saas-card-header">
+          <h6 class="saas-card-title">
+            <i class="bi bi-award text-success"></i> Recommended Retention Playbook
+          </h6>
+          <span class="badge bg-success-subtle text-success border">Strategic Actions</span>
+        </div>
+
+        <div class="row g-3">
+          {% for rec in result.recommendations %}
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 bg-body h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="badge bg-primary-subtle text-primary small">{{ rec.badge }}</span>
+                  <span class="badge {% if rec.priority == 'Urgent' %}bg-danger{% elif rec.priority == 'High Priority' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ rec.priority }}
+                  </span>
+                </div>
+                <h6 class="fw-bold mt-2 mb-1">{{ rec.title }}</h6>
+                <p class="text-muted small mb-0">{{ rec.description }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Profile Summary Table -->
+  <div class="saas-card">
+    <div class="saas-card-header">
+      <h6 class="saas-card-title"><i class="bi bi-card-checklist text-primary"></i> Submitted Account Attributes</h6>
+      <a href="{{ url_for('main.history') }}" class="btn btn-sm btn-outline-secondary">View In Prediction History</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Tenure</th>
+            <th>Contract</th>
+            <th>Monthly Charges</th>
+            <th>Internet</th>
+            <th>Tech Support</th>
+            <th>Online Security</th>
+            <th>Payment Method</th>
+            <th>Paperless</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>{{ customer.tenure }} months</strong></td>
+            <td><span class="badge bg-info-subtle text-info border">{{ customer.Contract }}</span></td>
+            <td><strong>${{ "%.2f"|format(customer.MonthlyCharges|float) }}</strong></td>
+            <td>{{ customer.InternetService }}</td>
+            <td>
+              {% if customer.TechSupport == 'Yes' %}
+                <span class="text-success"><i class="bi bi-check-circle"></i> Yes</span>
+              {% else %}
+                <span class="text-danger"><i class="bi bi-x-circle"></i> No</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if customer.OnlineSecurity == 'Yes' %}
+                <span class="text-success"><i class="bi bi-check-circle"></i> Yes</span>
+              {% else %}
+                <span class="text-danger"><i class="bi bi-x-circle"></i> No</span>
+              {% endif %}
+            </td>
+            <td>{{ customer.PaymentMethod }}</td>
+            <td>{{ customer.PaperlessBilling }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
